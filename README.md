@@ -14,7 +14,7 @@ Reading an unfamiliar codebase is rarely a one-shot question. You want a quick a
 - Choose the explanation depth: **Quick read**, **Beginner-friendly**, **Deep dive**, or **Review**.
 - Ask follow-up questions with the selected fragment still in context.
 - Connect any OpenAI-compatible `/chat/completions` API, including DeepSeek.
-- Keep API keys in VS Code SecretStorage; they are never written to workspace settings.
+- Keep API keys in VS Code SecretStorage; they are never written to workspace settings, and can be explicitly deleted from the connection panel.
 - Use a clearly labeled local preview before configuring a model provider.
 
 ## Quick start

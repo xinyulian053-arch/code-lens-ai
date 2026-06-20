@@ -16,6 +16,6 @@ When you explicitly request an explanation or send a follow-up, the extension se
 
 - You choose the API provider, base URL, and model.
 - You can turn off nearby context with `Code Lens AI: Send Surrounding Context`.
-- You can remove a saved key by clearing the API Key field and saving the connection settings.
+- You can remove a saved key with the dedicated **Delete saved Key** button in the connection panel.
 
 Your provider's own terms and privacy policy apply to requests sent to its endpoint. Review them before sending proprietary or sensitive code.

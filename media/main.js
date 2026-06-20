@@ -89,7 +89,8 @@ function settings() {
       <div class="field"><label class="field-label" for="apiBaseUrl">API 地址</label><input id="apiBaseUrl" value="${escapeHtml(state.apiBaseUrl)}" /></div>
       <div class="field"><label class="field-label" for="model">模型名称</label><input id="model" value="${escapeHtml(state.model)}" /></div>
       <button class="primary" data-action="save">保存连接设置</button>
-      <p class="privacy">代码只会在你点击解释或追问时发送到此处配置的服务。关闭“发送相邻上下文”可减少发送内容。</p>
+      ${state.apiConfigured ? '<button class="danger" data-action="deleteKey">删除已保存的 Key</button>' : ''}
+      <p class="privacy">留空 API Key 不会覆盖已保存的 Key。代码只会在你点击解释或追问时发送到此处配置的服务。关闭“发送相邻上下文”可减少发送内容。</p>
     </div>
   </details>`;
 }
@@ -111,6 +112,9 @@ function bindEvents() {
       settingsOpen = true;
       vscode.postMessage({ type: 'saveSettings', apiKey: document.getElementById('apiKey')?.value, apiBaseUrl: document.getElementById('apiBaseUrl')?.value, model: document.getElementById('model')?.value });
     }
+    if (action === 'deleteKey' && window.confirm('确定删除本机保存的 API Key 吗？此操作无法撤销。')) {
+      vscode.postMessage({ type: 'deleteApiKey' });
+    }
   }));
   document.querySelector('.settings')?.addEventListener('toggle', event => { settingsOpen = event.currentTarget.open; });
 }
@@ -121,7 +125,7 @@ window.addEventListener('message', event => {
   if (message.type === 'loading') { loading = true; error = ''; flash = ''; answer = null; }
   if (message.type === 'explanation') { state.selectedCode = message.selectedCode; state.explanation = message.explanation; state.mode = message.mode || state.mode; loading = false; answer = null; }
   if (message.type === 'error') { loading = false; error = message.text; }
-  if (message.type === 'settingsSaved') { state = message.state; flash = '连接设置已保存。'; error = ''; }
+  if (message.type === 'settingsSaved') { state = message.state; flash = message.text || '连接设置已保存。'; error = ''; }
   if (message.type === 'openSettings') settingsOpen = true;
   if (message.type === 'toast') flash = message.text;
   if (message.type === 'followUpLoading') { loading = true; }

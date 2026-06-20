@@ -74,16 +74,22 @@ class CodeLensViewProvider implements vscode.WebviewViewProvider {
         break;
       case 'saveSettings':
         try {
+          const submittedApiKey = stringOf(message.apiKey).trim();
           await this.aiClient.saveSettings(
             stringOf(message.apiBaseUrl),
             stringOf(message.model),
-            typeof message.apiKey === 'string' ? message.apiKey : undefined
+            submittedApiKey || undefined
           );
           this.post({ type: 'settingsSaved', state: await this.state() });
           void vscode.window.showInformationMessage('Code Lens AI 已保存连接设置。');
         } catch (error) {
           this.post({ type: 'error', text: toMessage(error) });
         }
+        break;
+      case 'deleteApiKey':
+        await this.aiClient.deleteApiKey();
+        this.post({ type: 'settingsSaved', state: await this.state(), text: '已删除保存的 API Key。' });
+        void vscode.window.showInformationMessage('Code Lens AI 已删除保存的 API Key。');
         break;
       case 'followUp':
         await this.answerFollowUp(stringOf(message.question));

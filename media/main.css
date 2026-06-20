@@ -36,6 +36,8 @@ select:focus, input:focus { border-color: var(--vscode-focusBorder); }
 
 .primary { width: 100%; color: var(--vscode-button-foreground); background: var(--vscode-button-background); border: 0; border-radius: 7px; padding: 8px 10px; font-weight: 600; margin-top: 10px; }
 .primary:hover { background: var(--vscode-button-hoverBackground); }
+.danger { width: 100%; color: var(--vscode-errorForeground); background: transparent; border: 1px solid var(--vscode-inputValidation-errorBorder, rgba(244, 63, 94, .45)); border-radius: 7px; padding: 7px 10px; font-size: 11px; margin-top: 8px; }
+.danger:hover { background: color-mix(in srgb, var(--vscode-inputValidation-errorBackground) 66%, transparent); }
 .secondary, .icon-button { color: var(--vscode-textLink-foreground); background: transparent; border: 0; padding: 4px; }
 .secondary { font-size: 11px; text-decoration: underline; }
 .icon-button { color: var(--vscode-descriptionForeground); }

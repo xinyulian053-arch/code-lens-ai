@@ -12,11 +12,11 @@ export class AiClient {
 
   public async saveApiKey(apiKey: string): Promise<void> {
     const trimmed = apiKey.trim();
-    if (!trimmed) {
-      await this.context.secrets.delete(SECRET_KEY);
-      return;
-    }
     await this.context.secrets.store(SECRET_KEY, trimmed);
+  }
+
+  public async deleteApiKey(): Promise<void> {
+    await this.context.secrets.delete(SECRET_KEY);
   }
 
   public getSettings(): { apiBaseUrl: string; model: string } {

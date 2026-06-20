@@ -14,7 +14,7 @@
 - 四种讲解深度：**一句话速读**、**新人友好**、**深入原理**、**审查模式**。
 - 对同一片代码继续追问，不必重复粘贴上下文。
 - 支持任意 OpenAI-compatible `/chat/completions` 服务，包括 DeepSeek。
-- API Key 使用 VS Code SecretStorage 保存，不会写入工作区配置文件。
+- API Key 使用 VS Code SecretStorage 保存，不会写入工作区配置文件；可在连接面板中单独删除。
 - 未配置模型时也可使用明确标识的本地快速预览。
 
 ## 快速开始
