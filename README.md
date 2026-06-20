@@ -2,6 +2,8 @@
 
 **Understand unfamiliar code without leaving VS Code.**
 
+[Install from VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=XinyuLabs.code-lens-ai)
+
 [简体中文](README.zh-CN.md) · [Report a bug](https://github.com/xinyulian053-arch/code-lens-ai/issues/new?template=bug_report.yml) · [Request a feature](https://github.com/xinyulian053-arch/code-lens-ai/issues/new?template=feature_request.yml)
 
 > Code Lens AI turns a selected code fragment into a clear explanation: the conclusion first, then the logic, inputs and outputs, risks, and a place to ask the next question.

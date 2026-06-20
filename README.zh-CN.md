@@ -2,6 +2,8 @@
 
 **不离开 VS Code，也能把陌生代码讲明白。**
 
+[在 VS Code Marketplace 安装](https://marketplace.visualstudio.com/items?itemName=XinyuLabs.code-lens-ai)
+
 [English](README.md) · [报告问题](https://github.com/xinyulian053-arch/code-lens-ai/issues/new?template=bug_report.yml) · [提出功能建议](https://github.com/xinyulian053-arch/code-lens-ai/issues/new?template=feature_request.yml)
 
 > Code Lens AI 会把选中的代码整理成清晰解释：先给结论，再说明逻辑、输入输出、风险，并保留继续追问的入口。
