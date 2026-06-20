@@ -3,7 +3,7 @@
   "displayName": "Code Lens AI",
   "description": "Layered AI code explanations in VS Code with privacy-conscious, bring-your-own-model configuration.",
   "version": "0.1.3",
-  "publisher": "local",
+  "publisher": "XinyuLabs",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -13,6 +13,12 @@
     "url": "https://github.com/xinyulian053-arch/code-lens-ai/issues"
   },
   "homepage": "https://github.com/xinyulian053-arch/code-lens-ai#readme",
+  "icon": "assets/icon.png",
+  "galleryBanner": {
+    "color": "#111827",
+    "theme": "dark"
+  },
+  "pricing": "Free",
   "engines": {
     "vscode": "^1.96.0"
   },
@@ -23,7 +29,11 @@
     "ai",
     "code explanation",
     "code review",
-    "learning"
+    "learning",
+    "deepseek",
+    "openai",
+    "developer tools",
+    "code reading"
   ],
   "activationEvents": [
     "onView:codeLensAi.explainView",
