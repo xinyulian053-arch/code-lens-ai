@@ -1,0 +1,118 @@
+{
+  "name": "code-lens-ai",
+  "displayName": "Code Lens AI",
+  "description": "Layered AI code explanations in VS Code with privacy-conscious, bring-your-own-model configuration.",
+  "version": "0.1.1",
+  "publisher": "local",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/xinyulian053-arch/code-lens-ai.git"
+  },
+  "bugs": {
+    "url": "https://github.com/xinyulian053-arch/code-lens-ai/issues"
+  },
+  "homepage": "https://github.com/xinyulian053-arch/code-lens-ai#readme",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "ai",
+    "code explanation",
+    "code review",
+    "learning"
+  ],
+  "activationEvents": [
+    "onView:codeLensAi.explainView",
+    "onCommand:codeLensAi.explainSelection",
+    "onCommand:codeLensAi.configure"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "codeLensAi.explainSelection",
+        "title": "解释当前代码",
+        "category": "Code Lens AI",
+        "icon": "$(lightbulb-autofix)"
+      },
+      {
+        "command": "codeLensAi.configure",
+        "title": "配置 AI 连接",
+        "category": "Code Lens AI",
+        "icon": "$(settings-gear)"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "codeLensAi",
+          "title": "Code Lens AI",
+          "icon": "assets/lens.svg"
+        }
+      ]
+    },
+    "views": {
+      "codeLensAi": [
+        {
+          "type": "webview",
+          "id": "codeLensAi.explainView",
+          "name": "代码透镜"
+        }
+      ]
+    },
+    "menus": {
+      "editor/context": [
+        {
+          "command": "codeLensAi.explainSelection",
+          "group": "navigation@10",
+          "when": "editorTextFocus"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Code Lens AI",
+      "properties": {
+        "codeLensAi.apiBaseUrl": {
+          "type": "string",
+          "default": "https://api.openai.com/v1",
+          "description": "OpenAI-compatible API base URL. The extension calls /chat/completions."
+        },
+        "codeLensAi.model": {
+          "type": "string",
+          "default": "gpt-4.1-mini",
+          "description": "The model name sent to your compatible API."
+        },
+        "codeLensAi.sendSurroundingContext": {
+          "type": "boolean",
+          "default": true,
+          "description": "Send up to 40 adjacent lines with the selection to improve explanations."
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "codeLensAi.explainSelection",
+        "key": "ctrl+alt+e",
+        "mac": "cmd+alt+e",
+        "when": "editorTextFocus"
+      }
+    ]
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package",
+    "vscode:prepublish": "npm run compile",
+    "lint": "tsc -p ./ --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^20.17.0",
+    "@types/vscode": "^1.96.0",
+    "@vscode/vsce": "^3.2.0",
+    "typescript": "^5.7.2"
+  }
+}
