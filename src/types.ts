@@ -24,9 +24,15 @@ export interface Explanation {
   source: 'ai' | 'preview';
 }
 
+export interface FollowUpTurn {
+  question: string;
+  answer: string;
+}
+
 export interface AppState {
   selectedCode?: CodeContext;
   explanation?: Explanation;
+  followUps: FollowUpTurn[];
   apiConfigured: boolean;
   model: string;
   apiBaseUrl: string;

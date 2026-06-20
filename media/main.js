@@ -2,12 +2,14 @@
 const vscode = acquireVsCodeApi();
 const app = document.getElementById('app');
 
-let state = { selectedCode: undefined, explanation: undefined, apiConfigured: false, model: '', apiBaseUrl: '', mode: 'guided' };
+let state = { selectedCode: undefined, explanation: undefined, followUps: [], apiConfigured: false, model: '', apiBaseUrl: '', mode: 'guided' };
 let flash = '';
 let error = '';
 let loading = false;
-let answer = null;
 let settingsOpen = false;
+let followUpLoading = false;
+let pendingQuestion = '';
+let followUpError = '';
 
 const modeLabels = {
   brief: '一句话速读',
@@ -19,6 +21,8 @@ const modeLabels = {
 const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[character]));
 
 function render() {
+  const scrollTarget = document.scrollingElement;
+  const scrollTop = scrollTarget?.scrollTop || 0;
   const explanation = state.explanation;
   app.innerHTML = `
     <section class="brand" aria-label="Code Lens AI">
@@ -34,6 +38,9 @@ function render() {
     ${settings()}
   `;
   bindEvents();
+  requestAnimationFrame(() => {
+    if (document.scrollingElement) document.scrollingElement.scrollTop = scrollTop;
+  });
 }
 
 function welcome() {
@@ -75,11 +82,23 @@ function explanationView(explanation) {
     <section class="card"><h2 class="section-title">执行流程</h2><div class="flow" style="margin-top:10px">${flow}</div></section>
     <section class="card"><h2 class="section-title">输入、输出与副作用</h2><p class="detail">${escapeHtml(explanation.inputsOutputs)}</p></section>
     <section class="card"><h2 class="section-title">需要留意</h2><ul class="risk-list" style="margin-top:7px">${risks}</ul></section>
-    <section class="card">
+    <section class="card" id="follow-up-section">
       <div class="section-head"><h2 class="section-title">继续追问</h2><button class="secondary" data-action="copy">复制解释</button></div>
-      <div class="ask-row"><input id="question" value="${escapeHtml(explanation.followUpPrompt)}" aria-label="输入追问"/><button data-action="ask" title="发送追问">问</button></div>
-      ${answer ? `<div class="answer" style="margin-top:10px"><strong>${escapeHtml(answer.question)}</strong><br/>${escapeHtml(answer.text)}</div>` : ''}
+      <p class="conversation-hint">会记住当前代码、初始解释和最近 8 轮对话。</p>
+      <div class="conversation" aria-live="polite">
+        ${state.followUps.map(turn => conversationTurn(turn.question, turn.answer)).join('')}
+        ${followUpLoading ? conversationTurn(pendingQuestion, '', true) : ''}
+      </div>
+      ${followUpError ? `<div class="follow-up-error">${escapeHtml(followUpError)}</div>` : ''}
+      <div class="ask-row"><input id="question" value="${followUpLoading ? '' : escapeHtml(state.followUps.length ? '' : explanation.followUpPrompt)}" placeholder="继续问：为什么？边界条件是什么？" aria-label="输入追问" ${followUpLoading ? 'disabled' : ''}/><button data-action="ask" title="发送追问" ${followUpLoading ? 'disabled' : ''}>问</button></div>
     </section>`;
+}
+
+function conversationTurn(question, text, isLoading = false) {
+  return `<div class="conversation-turn">
+    <div class="question-bubble">${escapeHtml(question)}</div>
+    <div class="answer ${isLoading ? 'answer-loading' : ''}">${isLoading ? '<span class="spinner"></span><span>正在回答…</span>' : escapeHtml(text)}</div>
+  </div>`;
 }
 
 function settings() {
@@ -106,7 +125,14 @@ function bindEvents() {
     if (action === 'copy') vscode.postMessage({ type: 'copyExplanation' });
     if (action === 'ask') {
       const question = document.getElementById('question')?.value?.trim();
-      if (question) vscode.postMessage({ type: 'followUp', question });
+      if (question && !followUpLoading) {
+        followUpLoading = true;
+        pendingQuestion = question;
+        followUpError = '';
+        render();
+        scrollToFollowUp();
+        vscode.postMessage({ type: 'followUp', question });
+      }
     }
     if (action === 'save') {
       settingsOpen = true;
@@ -122,16 +148,22 @@ function bindEvents() {
 window.addEventListener('message', event => {
   const message = event.data;
   if (message.type === 'hydrate') { state = message.state; loading = false; }
-  if (message.type === 'loading') { loading = true; error = ''; flash = ''; answer = null; }
-  if (message.type === 'explanation') { state.selectedCode = message.selectedCode; state.explanation = message.explanation; state.mode = message.mode || state.mode; loading = false; answer = null; }
+  if (message.type === 'loading') { loading = true; error = ''; flash = ''; followUpLoading = false; pendingQuestion = ''; followUpError = ''; }
+  if (message.type === 'explanation') { state.selectedCode = message.selectedCode; state.explanation = message.explanation; state.followUps = message.followUps || []; state.mode = message.mode || state.mode; loading = false; followUpLoading = false; pendingQuestion = ''; followUpError = ''; }
   if (message.type === 'error') { loading = false; error = message.text; }
   if (message.type === 'settingsSaved') { state = message.state; flash = message.text || '连接设置已保存。'; error = ''; }
   if (message.type === 'openSettings') settingsOpen = true;
   if (message.type === 'toast') flash = message.text;
-  if (message.type === 'followUpLoading') { loading = true; }
-  if (message.type === 'followUpAnswer') { loading = false; answer = { question: message.question, text: message.answer }; }
+  if (message.type === 'followUpLoading') { followUpLoading = true; pendingQuestion = message.question || pendingQuestion; }
+  if (message.type === 'followUpAnswer') { state.followUps = message.followUps || [...state.followUps, { question: message.question, answer: message.answer }]; followUpLoading = false; pendingQuestion = ''; followUpError = ''; }
+  if (message.type === 'followUpError') { followUpLoading = false; followUpError = message.text; }
   render();
+  if (message.type === 'followUpLoading' || message.type === 'followUpAnswer' || message.type === 'followUpError') scrollToFollowUp();
 });
+
+function scrollToFollowUp() {
+  requestAnimationFrame(() => document.getElementById('follow-up-section')?.scrollIntoView({ block: 'end', behavior: 'smooth' }));
+}
 
 vscode.postMessage({ type: 'ready' });
 render();

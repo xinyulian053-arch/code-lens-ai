@@ -2,7 +2,7 @@
   "name": "code-lens-ai",
   "displayName": "Code Lens AI",
   "description": "Layered AI code explanations in VS Code with privacy-conscious, bring-your-own-model configuration.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "local",
   "license": "MIT",
   "repository": {

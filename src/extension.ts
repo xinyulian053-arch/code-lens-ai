@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { AiClient } from './aiClient';
-import { AppState, CodeContext, ExplainMode, Explanation } from './types';
+import { AppState, CodeContext, ExplainMode, Explanation, FollowUpTurn } from './types';
 
 const VIEW_ID = 'codeLensAi.explainView';
 
@@ -22,6 +22,7 @@ class CodeLensViewProvider implements vscode.WebviewViewProvider {
   private selectedCode?: CodeContext;
   private explanation?: Explanation;
   private mode: ExplainMode = 'guided';
+  private followUps: FollowUpTurn[] = [];
 
   public constructor(
     private readonly context: vscode.ExtensionContext,
@@ -49,11 +50,12 @@ class CodeLensViewProvider implements vscode.WebviewViewProvider {
     this.mode = mode;
     this.selectedCode = this.getContext(editor);
     this.explanation = undefined;
+    this.followUps = [];
     await vscode.commands.executeCommand('workbench.view.extension.codeLensAi');
     this.post({ type: 'loading', text: '正在理解选中的代码…' });
     try {
       this.explanation = await this.aiClient.explain(this.selectedCode, mode);
-      this.post({ type: 'explanation', explanation: this.explanation, selectedCode: this.selectedCode, mode: this.mode });
+      this.post({ type: 'explanation', explanation: this.explanation, selectedCode: this.selectedCode, mode: this.mode, followUps: this.followUps });
     } catch (error) {
       this.post({ type: 'error', text: toMessage(error) });
     }
@@ -107,12 +109,13 @@ class CodeLensViewProvider implements vscode.WebviewViewProvider {
     if (!question || !this.selectedCode || !this.explanation) {
       return;
     }
-    this.post({ type: 'followUpLoading' });
+    this.post({ type: 'followUpLoading', question });
     try {
-      const answer = await this.aiClient.answerFollowUp(question, this.selectedCode, this.explanation);
-      this.post({ type: 'followUpAnswer', question, answer });
+      const answer = await this.aiClient.answerFollowUp(question, this.selectedCode, this.explanation, this.followUps);
+      this.followUps.push({ question, answer });
+      this.post({ type: 'followUpAnswer', question, answer, followUps: this.followUps });
     } catch (error) {
-      this.post({ type: 'error', text: toMessage(error) });
+      this.post({ type: 'followUpError', text: toMessage(error) });
     }
   }
 
@@ -140,6 +143,7 @@ class CodeLensViewProvider implements vscode.WebviewViewProvider {
     return {
       selectedCode: this.selectedCode,
       explanation: this.explanation,
+      followUps: this.followUps,
       apiConfigured: await this.aiClient.hasApiKey(),
       model: settings.model,
       apiBaseUrl: settings.apiBaseUrl,

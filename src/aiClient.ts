@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { CodeContext, ExplainMode, Explanation, FlowStep } from './types';
+import { CodeContext, ExplainMode, Explanation, FlowStep, FollowUpTurn } from './types';
 
 const SECRET_KEY = 'codeLensAi.apiKey';
 
@@ -94,12 +94,18 @@ export class AiClient {
     return normalizeExplanation(content, context);
   }
 
-  public async answerFollowUp(question: string, context: CodeContext, explanation: Explanation): Promise<string> {
+  public async answerFollowUp(
+    question: string,
+    context: CodeContext,
+    explanation: Explanation,
+    conversation: FollowUpTurn[]
+  ): Promise<string> {
     const apiKey = await this.context.secrets.get(SECRET_KEY);
     if (!apiKey) {
       return '这是离线预览。配置 API Key 后，可以针对这段代码继续追问。';
     }
     const settings = this.getSettings();
+    const recentConversation = conversation.slice(-8);
     const response = await fetch(`${settings.apiBaseUrl}/chat/completions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
@@ -107,8 +113,24 @@ export class AiClient {
         model: settings.model,
         temperature: 0.25,
         messages: [
-          { role: 'system', content: '你是代码解释助手。用简体中文简洁回答，基于给定片段；不要编造无法确认的事实。' },
-          { role: 'user', content: JSON.stringify({ question, code: context.code, language: context.language, previousExplanation: explanation }) }
+          { role: 'system', content: '你是代码解释助手。用简体中文简洁回答，基于给定片段；不要编造无法确认的事实。回答应承接前面的对话，不要重复完整解释，除非用户明确要求。' },
+          {
+            role: 'user',
+            content: JSON.stringify({
+              conversationContext: {
+                code: context.code,
+                language: context.language,
+                fileName: context.fileName,
+                selectedRange: context.rangeLabel,
+                initialExplanation: explanation
+              }
+            })
+          },
+          ...recentConversation.flatMap(turn => [
+            { role: 'user', content: turn.question },
+            { role: 'assistant', content: turn.answer }
+          ]),
+          { role: 'user', content: question }
         ]
       }),
       signal: AbortSignal.timeout(45_000)

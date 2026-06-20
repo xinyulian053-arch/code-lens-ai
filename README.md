@@ -12,7 +12,7 @@ Reading an unfamiliar codebase is rarely a one-shot question. You want a quick a
 
 - Explain the current selection, or the current line when nothing is selected.
 - Choose the explanation depth: **Quick read**, **Beginner-friendly**, **Deep dive**, or **Review**.
-- Ask follow-up questions with the selected fragment still in context.
+- Ask follow-up questions in a continuous thread that keeps the selected fragment, initial explanation, and recent conversation context.
 - Connect any OpenAI-compatible `/chat/completions` API, including DeepSeek.
 - Keep API keys in VS Code SecretStorage; they are never written to workspace settings, and can be explicitly deleted from the connection panel.
 - Use a clearly labeled local preview before configuring a model provider.
